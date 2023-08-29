@@ -8,8 +8,13 @@ const app = express();
 app.use(express.json());
 
 app.post("/hello", (req, res) => {
-  console.log(req.body);
-  res.send("Helllllo");
+  res.send(`Hello ${req.body.name}`);
+});
+
+app.get("/hello/:name/goodbay/:otherName", (req, res) => {
+  console.log(req.params);
+  const { name } = req.params;
+  res.send(`Hello ${name}!!`);
 });
 
 app.listen(8000, () => {
