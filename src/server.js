@@ -7,14 +7,31 @@ const app = express();
 
 app.use(express.json());
 
-app.post("/hello", (req, res) => {
-  res.send(`Hello ${req.body.name}`);
-});
+let articlesInfo = [
+  {
+    name: "learn-react",
+    upvotes: 0
+  },
+  {
+    name: "learn-node",
+    upvotes: 0
+  },
+  {
+    name: "learn-mongodb",
+    upvotes: 0
+  }
+];
 
-app.get("/hello/:name/goodbay/:otherName", (req, res) => {
-  console.log(req.params);
+app.put("/api/articles/:name/upvote", (req, res) => {
   const { name } = req.params;
-  res.send(`Hello ${name}!!`);
+  const articele = articlesInfo.find(a => a.name === name);
+
+  if (articele) {
+    articele.upvotes += 1;
+    res.send(`The ${name} article has now ${articele.upvotes} upvotes`);
+  } else {
+    res.send("This article doesn't exist");
+  }
 });
 
 app.listen(8000, () => {
