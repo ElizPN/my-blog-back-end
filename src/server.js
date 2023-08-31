@@ -10,15 +10,18 @@ app.use(express.json());
 let articlesInfo = [
   {
     name: "learn-react",
-    upvotes: 0
+    upvotes: 0,
+    comments: []
   },
   {
     name: "learn-node",
-    upvotes: 0
+    upvotes: 0,
+    comments: []
   },
   {
     name: "learn-mongodb",
-    upvotes: 0
+    upvotes: 0,
+    comments: []
   }
 ];
 
@@ -28,9 +31,30 @@ app.put("/api/articles/:name/upvote", (req, res) => {
 
   if (articele) {
     articele.upvotes += 1;
-    res.send(`The ${name} article has now ${articele.upvotes} upvotes`);
+    res.send(`The ${name} article has now ${articele.upvotes} upvotes!!!`);
   } else {
     res.send("This article doesn't exist");
+  }
+});
+
+// create new post
+
+app.post("/api/articles/:name/comments", (req, res) => {
+  // get article name from url parametr
+  const { name } = req.params;
+
+  // get info from body requst
+  const { postedBy, text } = req.body;
+
+  // beforee we insert our data (postedBy and text) to comments, we have to find corresponding article in our "database"
+  const article = articlesInfo.find(a => a.name === name);
+
+  // push new object with same properties
+  if (article) {
+    article.comments.push({ postedBy, text });
+    res.send(article.comments);
+  } else {
+    res.send("This article doesn't exist!");
   }
 });
 
