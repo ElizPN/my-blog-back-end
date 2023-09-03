@@ -1,41 +1,17 @@
 import express from "express";
-// we can use MongoClient to connect with data base
-import { MongoClient } from "mongodb";
+import  {db, connectToMongoDB } from "./db.js"
 
 const app = express();
 
+
 // middlaware. We tell server wnen it reciives request that has JSON body (JSON payload)
 // it is going to parce it and automatically make that available to us on request.body
-
 app.use(express.json());
-
-let articlesInfo = [
-  {
-    name: "learn-react",
-    upvotes: 0,
-    comments: []
-  },
-  {
-    name: "learn-node",
-    upvotes: 0,
-    comments: []
-  },
-  {
-    name: "learn-mongodb",
-    upvotes: 0,
-    comments: []
-  }
-];
 
 app.get("/api/articles/:name", async (req, res)=> {
   // get article name from url parametr 
   const {name} = req.params
-  // connect with data base
-  const client = new MongoClient("mongodb://127.0.0.1:27017");
-  await client.connect()
-
-  const db = client.db('react-blog-db')
-
+ 
   // make query to db
   const article = await db.collection("articles").findOne({ name });
 
@@ -49,11 +25,6 @@ app.get("/api/articles/:name", async (req, res)=> {
 app.put("/api/articles/:name/upvote", async (req, res) => {
   const { name } = req.params;
  
-  const client = new MongoClient("mongodb://127.0.0.1:27017");
-  await client.connect()
-
-  const db = client.db('react-blog-db')
-
   await db.collection("articles").updateOne({name}, {
     $inc : {upvotes: 1}
   })
@@ -76,12 +47,6 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   // get info from body requst
   const { postedBy, text } = req.body;
 
-  // connect to db
-  const client = new MongoClient("mongodb://127.0.0.1:27017");
-  await client.connect()
-
-  const db = client.db('react-blog-db')
-
   // find article with corresponding name in db and change property comments
   await db.collection("articles").updateOne(
      { name },
@@ -101,6 +66,11 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   }
 });
 
-app.listen(8000, () => {
-  console.log("Server is listening on port 8000");
-});
+connectToMongoDB(()=> {
+  console.log("Successefully connected to database");
+  app.listen(8000, () => {
+    console.log("Server is listening on port 8000");
+  });
+
+})
+
