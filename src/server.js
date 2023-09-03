@@ -76,24 +76,25 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   // get info from body requst
   const { postedBy, text } = req.body;
 
-  // before we insert our data (postedBy and text) to comments, we have to find corresponding article in our "database"
-  // const article = articlesInfo.find(a => a.name === name);
-
+  // connect to db
   const client = new MongoClient("mongodb://127.0.0.1:27017");
   await client.connect()
 
   const db = client.db('react-blog-db')
 
-  await db.collections("articles").updateOne(
+  // find article with corresponding name in db and change property comments
+  await db.collection("articles").updateOne(
      { name },
      {
-       $set: { comments: { postedBy, text } }
+       $push: { comments: { postedBy, text } }
      }
    );
 
+   // we need to load updated article
+  const article = await db.collection("articles").findOne({ name });
+
   // push new object with same properties
   if (article) {
-    article.comments.push({ postedBy, text });
     res.send(article.comments);
   } else {
     res.send("This article doesn't exist!");
