@@ -48,8 +48,7 @@ app.get("/api/articles/:name", async (req, res)=> {
 
 app.put("/api/articles/:name/upvote", async (req, res) => {
   const { name } = req.params;
-  // const articele = articlesInfo.find(a => a.name === name);
-
+ 
   const client = new MongoClient("mongodb://127.0.0.1:27017");
   await client.connect()
 
@@ -57,13 +56,11 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
 
   await db.collection("articles").updateOne({name}, {
     $inc : {upvotes: 1}
-   
   })
 
   const article = await db.collection("articles").findOne({ name });
 
   if (article) {
-    article.upvotes += 1;
     res.send(`The ${name} article has now ${article.upvotes} upvotes!!!`);
   } else {
     res.send("This article doesn't exist");
@@ -72,15 +69,27 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
 
 
 // create new post
-app.post("/api/articles/:name/comments", (req, res) => {
+app.post("/api/articles/:name/comments", async (req, res) => {
   // get article name from url parametr
   const { name } = req.params;
 
   // get info from body requst
   const { postedBy, text } = req.body;
 
-  // beforee we insert our data (postedBy and text) to comments, we have to find corresponding article in our "database"
-  const article = articlesInfo.find(a => a.name === name);
+  // before we insert our data (postedBy and text) to comments, we have to find corresponding article in our "database"
+  // const article = articlesInfo.find(a => a.name === name);
+
+  const client = new MongoClient("mongodb://127.0.0.1:27017");
+  await client.connect()
+
+  const db = client.db('react-blog-db')
+
+  await db.collections("articles").updateOne(
+     { name },
+     {
+       $set: { comments: { postedBy, text } }
+     }
+   );
 
   // push new object with same properties
   if (article) {
