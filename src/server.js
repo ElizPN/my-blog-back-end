@@ -27,14 +27,14 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
   await db.collection("articles").updateOne(
     { name },
     {
-      $inc: { upvotes: 1 }
-    }
+      $inc: { upvotes: 1 },
+    },
   );
 
   const article = await db.collection("articles").findOne({ name });
 
   if (article) {
-    res.send(`The ${name} article has now ${article.upvotes} upvotes!!!`);
+    res.json(article);
   } else {
     res.send("This article doesn't exist");
   }
@@ -52,8 +52,8 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   await db.collection("articles").updateOne(
     { name },
     {
-      $push: { comments: { postedBy, text } }
-    }
+      $push: { comments: { postedBy, text } },
+    },
   );
 
   // we need to load updated article
