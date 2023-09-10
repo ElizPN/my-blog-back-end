@@ -44,10 +44,8 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
 app.post("/api/articles/:name/comments", async (req, res) => {
   // get article name from url parametr
   const { name } = req.params;
-
   // get info from body requst
   const { postedBy, text } = req.body;
-
   // find article with corresponding name in db and change property comments
   await db.collection("articles").updateOne(
     { name },
@@ -55,13 +53,11 @@ app.post("/api/articles/:name/comments", async (req, res) => {
       $push: { comments: { postedBy, text } },
     },
   );
-
   // we need to load updated article
   const article = await db.collection("articles").findOne({ name });
-
   // push new object with same properties
   if (article) {
-    res.send(article.comments);
+    res.json(article);
   } else {
     res.send("This article doesn't exist!");
   }
