@@ -1,8 +1,19 @@
 import express from "express";
 import { db, connectToMongoDB } from "./db.js";
+import fs from "fs";
+import admin from "firebase-admin";
+
+const credentials = JSON.parse(fs.readFileSync("../credentials.json"));
+
+
+// add firebase admin to a back-end
+// connect firebase to server ( similar waht we did on front-end)
+// we say firebase what credential use in order to connetc to our project
+admin.initializeApp({
+  credential: admin.credential.cert(credentials),
+});
 
 const app = express();
-
 // middlaware. We tell server wnen it reciives request that has JSON body (JSON payload)
 // it is going to parce it and automatically make that available to us on request.body
 app.use(express.json());
