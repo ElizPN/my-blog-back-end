@@ -5,7 +5,6 @@ import admin from "firebase-admin";
 
 const credentials = JSON.parse(fs.readFileSync("../credentials.json"));
 
-
 // add firebase admin to a back-end
 // connect firebase to server ( similar waht we did on front-end)
 // we say firebase what credential use in order to connetc to our project
@@ -18,14 +17,36 @@ const app = express();
 // it is going to parce it and automatically make that available to us on request.body
 app.use(express.json());
 
+// middleware for firebase
+// load the user automatically from the authtoken tht they have included with their headers
+
+app.use(async (res, req, next) => {
+  const { authtoken } = req.headers;
+
+  if (authtoken) {
+    try {
+      req.user = await admin.auth().verifyIdToken(authtoken);
+    } catch (error) {
+      res.sendStatus(400);
+    }
+  }
+  next();
+});
+
 app.get("/api/articles/:name", async (req, res) => {
   // get article name from url parametr
   const { name } = req.params;
+
+  // get firebase id
+  const {uid} = req.user
 
   // make query to db
   const article = await db.collection("articles").findOne({ name });
 
   if (article) {
+    const upvoteIds = article.upvoteIds || []
+    // check does user have id and does't it include this id to upvoteIds arrray (has user upvoted it already or not?)
+    article.canUpvote = uid && !upvoteIds.include(uid);
     res.json(article);
   } else {
     res.sendStatus(404);
