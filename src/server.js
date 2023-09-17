@@ -3,7 +3,8 @@ import { db, connectToMongoDB } from "./db.js";
 import fs from "fs";
 import admin from "firebase-admin";
 
-const credentials = JSON.parse(fs.readFileSync("../credentials.json"));
+//fs - path relatively directory we are in ( in our case, it is my-blog-back-end)
+const credentials = JSON.parse(fs.readFileSync("./credentials.json"));
 
 // add firebase admin to a back-end
 // connect firebase to server ( similar waht we did on front-end)
@@ -19,8 +20,8 @@ app.use(express.json());
 
 // middleware for firebase
 // load the user automatically from the authtoken tht they have included with their headers
-
-app.use(async (res, req, next) => {
+// ?
+app.use(async (req, res, next) => {
   const { authtoken } = req.headers;
 
   if (authtoken) {
@@ -28,7 +29,7 @@ app.use(async (res, req, next) => {
       req.user = await admin.auth().verifyIdToken(authtoken);
     } catch (error) {
       res.sendStatus(400);
-    }
+    } 
   }
   next();
 });
@@ -38,13 +39,13 @@ app.get("/api/articles/:name", async (req, res) => {
   const { name } = req.params;
 
   // get firebase id
-  const {uid} = req.user
+  const { uid } = req.user;
 
   // make query to db
   const article = await db.collection("articles").findOne({ name });
 
   if (article) {
-    const upvoteIds = article.upvoteIds || []
+    const upvoteIds = article.upvoteIds || [];
     // check does user have id and does't it include this id to upvoteIds arrray (has user upvoted it already or not?)
     article.canUpvote = uid && !upvoteIds.include(uid);
     res.json(article);
