@@ -72,7 +72,6 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
     const upvoteIds = article.upvoteIds || [];
     const canUpvote = uid && !upvoteIds.include(uid);
 
-
     if (canUpvote) {
       await db.collection("articles").updateOne(
         { name },
@@ -95,12 +94,14 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   // get article name from url parametr
   const { name } = req.params;
   // get info from body requst
-  const { postedBy, text } = req.body;
+  const { text } = req.body;
+  const { email } = req.email;
+
   // find article with corresponding name in db and change property comments
   await db.collection("articles").updateOne(
     { name },
     {
-      $push: { comments: { postedBy, text } },
+      $push: { comments: { postedBy: email, text } },
     },
   );
   // we need to load updated article
