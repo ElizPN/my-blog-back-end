@@ -28,9 +28,10 @@ app.use(async (req, res, next) => {
     try {
       req.user = await admin.auth().verifyIdToken(authtoken);
     } catch (error) {
-      res.sendStatus(400);
+      return res.sendStatus(400);
     }
   }
+  req.user = req.user || {};
   next();
 });
 
@@ -47,7 +48,7 @@ app.get("/api/articles/:name", async (req, res) => {
   if (article) {
     const upvoteIds = article.upvoteIds || [];
     // check does user have id and does't it include this id to upvoteIds arrray (has user upvoted it already or not?)
-    article.canUpvote = uid && !upvoteIds.include(uid);
+    article.canUpvote = uid && !upvoteIds.includes(uid);
     res.json(article);
   } else {
     res.sendStatus(404);
@@ -70,7 +71,7 @@ app.put("/api/articles/:name/upvote", async (req, res) => {
 
   if (article) {
     const upvoteIds = article.upvoteIds || [];
-    const canUpvote = uid && !upvoteIds.include(uid);
+    const canUpvote = uid && !upvoteIds.includes(uid);
 
     if (canUpvote) {
       await db.collection("articles").updateOne(
@@ -95,7 +96,7 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   const { name } = req.params;
   // get info from body requst
   const { text } = req.body;
-  const { email } = req.email;
+  const { email } = req.user;
 
   // find article with corresponding name in db and change property comments
   await db.collection("articles").updateOne(
